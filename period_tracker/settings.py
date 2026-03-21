@@ -1,5 +1,5 @@
 from pathlib import Path
-import os
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-change-this-in-production-xyz123abc'
@@ -31,7 +31,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'period_tracker.urls'
-STATIC_ROOT = os.path.join(BASE_DIR, "period_tracker/static")
+STATIC_ROOT = "/home/trackerdaily/periods-tracker/period_tracker/static"
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
