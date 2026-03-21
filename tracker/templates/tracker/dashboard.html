@@ -1,11 +1,11 @@
 {% extends 'tracker/base.html' %}
 {% load static %}
-
 {% block title %}luna — home{% endblock %}
 
 {% block content %}
 <div class="dashboard">
 
+  <!-- Hero -->
   <section class="hero">
     <div class="hero-inner">
       <div class="cycle-orb" id="cycleOrb">
@@ -28,20 +28,13 @@
           {% endif %}
         </div>
       </div>
-
       <div class="hero-info">
         <h1 class="hero-title">
-          {% if days_since is not None and days_since <= 7 %}
-            your cycle is here
-          {% elif days_until is not None and days_until <= 5 %}
-            cycle arriving soon
-          {% elif days_until is not None %}
-            in the clear
-          {% else %}
-            start tracking
-          {% endif %}
+          {% if days_since is not None and days_since <= 7 %}your cycle is here
+          {% elif days_until is not None and days_until <= 5 %}cycle arriving soon
+          {% elif days_until is not None %}in the clear
+          {% else %}start tracking{% endif %}
         </h1>
-
         <div class="stat-row">
           {% if stats.next_predicted %}
             <div class="stat">
@@ -53,21 +46,11 @@
               <span class="stat-label">until next</span>
             </div>
           {% endif %}
-          <div class="stat">
-            <span class="stat-value">{{ stats.avg_cycle }}d</span>
-            <span class="stat-label">avg cycle</span>
-          </div>
-          <div class="stat">
-            <span class="stat-value">{{ stats.avg_period }}d</span>
-            <span class="stat-label">avg period</span>
-          </div>
-          <div class="stat">
-            <span class="stat-value">{{ total_entries }}</span>
-            <span class="stat-label">days logged</span>
-          </div>
+          <div class="stat"><span class="stat-value">{{ stats.avg_cycle }}d</span><span class="stat-label">avg cycle</span></div>
+          <div class="stat"><span class="stat-value">{{ stats.avg_period }}d</span><span class="stat-label">avg period</span></div>
+          <div class="stat"><span class="stat-value">{{ total_entries }}</span><span class="stat-label">days logged</span></div>
         </div>
-
-        <a href="{% url 'log_entry' %}" class="btn btn--primary">log today</a>
+        <a href="{% url 'log_entry' %}" class="btn btn--primary">log period</a>
       </div>
     </div>
   </section>
@@ -85,12 +68,10 @@
       <span class="status-item">
         <span class="status-label">avg length</span>
         <span class="status-val {% if late_info.cycle_normal %}status-val--normal{% else %}status-val--irregular{% endif %}">
-          {{ stats.avg_cycle }}d
-          {% if late_info.cycle_normal %}· normal{% else %}· irregular{% endif %}
+          {{ stats.avg_cycle }}d · {% if late_info.cycle_normal %}normal{% else %}irregular{% endif %}
         </span>
       </span>
     </div>
-
     {% if late_info.is_late %}
     <div class="cycle-status-warning">
       <span class="warning-icon">⚠</span>
@@ -100,6 +81,39 @@
     {% endif %}
   </div>
 
+  <!-- Habit stats -->
+  {% if habit_stats %}
+  <section class="section">
+    <div class="section-title-row">
+      <h2 class="section-title" style="margin-bottom:0;border:none;padding:0;">habits today</h2>
+      <a href="{% url 'manage_habits' %}" class="link-more" style="margin-top:0;">manage →</a>
+    </div>
+    <div class="habit-stats-grid">
+      {% for hs in habit_stats %}
+      <a href="{% url 'log_habits' today|date:'Y-m-d' %}" class="habit-stat-card">
+        <div class="hsc-top">
+          <span class="habit-emoji" style="background:{{ hs.habit.color }}20;color:{{ hs.habit.color }};">{{ hs.habit.emoji }}</span>
+          <span class="hsc-status hsc-status--{{ hs.today_status|default:'none' }}">
+            {% if hs.today_status == 'done' %}✓ done
+            {% elif hs.today_status == 'partial' %}~ partial
+            {% else %}— not logged{% endif %}
+          </span>
+        </div>
+        <p class="hsc-name">{{ hs.habit.name }}</p>
+        <div class="hsc-bottom">
+          <span class="hsc-streak">{{ hs.streak }}d streak</span>
+          <div class="hsc-bar-wrap">
+            <div class="hsc-bar" style="width:{{ hs.week_pct }}%;background:{{ hs.habit.color }};"></div>
+          </div>
+          <span class="hsc-pct">{{ hs.week_pct }}%</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Calendar -->
   <section class="section">
     <div class="cal-nav">
       <button class="cal-nav-btn" id="calPrev">&#8592;</button>
@@ -116,6 +130,7 @@
     </div>
   </section>
 
+  <!-- Recent -->
   {% if recent %}
   <section class="section">
     <h2 class="section-title">recent</h2>
@@ -144,81 +159,125 @@
   {% endif %}
 
 </div>
+
+<!-- Date action modal -->
+<div class="date-modal" id="dateModal">
+  <div class="date-modal-backdrop" id="dateModalBackdrop"></div>
+  <div class="date-modal-box">
+    <div class="date-modal-header">
+      <span class="date-modal-title" id="dateModalTitle"></span>
+      <button class="date-modal-close" id="dateModalClose">✕</button>
+    </div>
+    <div class="date-modal-actions">
+      <a href="#" id="modalLogPeriod" class="date-modal-btn">
+        <span class="date-modal-icon">🌸</span>
+        <div class="date-modal-text">
+          <span class="date-modal-label">log period</span>
+          <span class="date-modal-sub">flow, symptoms & mood</span>
+        </div>
+        <span class="date-modal-indicator" id="indPeriod"></span>
+      </a>
+      <a href="#" id="modalLogHabits" class="date-modal-btn">
+        <span class="date-modal-icon">✦</span>
+        <div class="date-modal-text">
+          <span class="date-modal-label">log habits</span>
+          <span class="date-modal-sub">track your daily habits</span>
+        </div>
+        <span class="date-modal-indicator" id="indHabits"></span>
+      </a>
+      <a href="#" id="modalLogJournal" class="date-modal-btn">
+        <span class="date-modal-icon">✍︎</span>
+        <div class="date-modal-text">
+          <span class="date-modal-label">journal</span>
+          <span class="date-modal-sub">write freely</span>
+        </div>
+        <span class="date-modal-indicator" id="indJournal"></span>
+      </a>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-const loggedDates  = new Set({{ logged_dates_json|safe }});
-const sexDates     = new Set({{ sex_dates_json|safe }});
-const overdueDates = new Set({{ overdue_dates_json|safe }});
-const phaseDates   = {{ phase_dates_json|safe }};
-const today        = new Date();
+const loggedDates    = new Set({{ logged_dates_json|safe }});
+const sexDates       = new Set({{ sex_dates_json|safe }});
+const overdueDates   = new Set({{ overdue_dates_json|safe }});
+const journalDates   = new Set({{ journal_dates_json|safe }});
+const habitDates     = new Set({{ habit_dates_json|safe }});
+const phaseDates     = {{ phase_dates_json|safe }};
+const today          = new Date();
 
 let viewYear  = today.getFullYear();
 let viewMonth = today.getMonth();
 
-const MONTH_NAMES = [
-  'january','february','march','april','may','june',
-  'july','august','september','october','november','december'
-];
+const MONTH_NAMES = ['january','february','march','april','may','june','july','august','september','october','november','december'];
 
 function buildCalendar() {
   const cal   = document.getElementById('calendar');
   const label = document.getElementById('calMonthLabel');
   if (!cal) return;
-
   label.textContent = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
 
   const firstDay    = new Date(viewYear, viewMonth, 1).getDay();
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
 
-  const dayNames = ['su','mo','tu','we','th','fr','sa'];
   let html = '<div class="cal-grid">';
-  dayNames.forEach(d => { html += `<div class="cal-head">${d}</div>`; });
-
-  for (let i = 0; i < firstDay; i++) {
-    html += '<div class="cal-cell cal-cell--empty"></div>';
-  }
+  ['su','mo','tu','we','th','fr','sa'].forEach(d => { html += `<div class="cal-head">${d}</div>`; });
+  for (let i = 0; i < firstDay; i++) html += '<div class="cal-cell cal-cell--empty"></div>';
 
   for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr  = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday  = d === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
-    const isOverdue = overdueDates.has(dateStr);
-    const isLogged  = loggedDates.has(dateStr);
-    const phase     = phaseDates[dateStr];
-    const hasSex    = sexDates.has(dateStr);
+    const ds      = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = d === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
+    const isOverdue = overdueDates.has(ds);
+    const isLogged  = loggedDates.has(ds);
+    const phase     = phaseDates[ds];
+    const hasSex    = sexDates.has(ds);
+    const hasJournal = journalDates.has(ds);
+    const hasHabits  = habitDates.has(ds);
 
     let cls = 'cal-cell';
-    if (isOverdue) {
-      cls += ' cal-cell--overdue';
-    } else if (isLogged) {
-      cls += ' cal-cell--period';
-    } else if (phase === 'menstrual') {
-      cls += ' cal-cell--predicted';
-    } else if (phase) {
-      cls += ` cal-cell--${phase}`;
-    }
-    if (isToday) cls += ' cal-cell--today';
+    if (isOverdue)       cls += ' cal-cell--overdue';
+    else if (isLogged)   cls += ' cal-cell--period';
+    else if (phase === 'menstrual') cls += ' cal-cell--predicted';
+    else if (phase)      cls += ` cal-cell--${phase}`;
+    if (isToday)         cls += ' cal-cell--today';
 
-    html += `<a href="/log/${dateStr}/" class="${cls}">${d}${hasSex ? '<span class="cal-sex-dot"></span>' : ''}</a>`;
+    let dots = '';
+    if (hasSex)     dots += '<span class="cal-sex-dot"></span>';
+    if (hasJournal) dots += '<span class="cal-journal-dot"></span>';
+    if (hasHabits)  dots += '<span class="cal-habit-dot"></span>';
+
+    html += `<a href="#" class="${cls}" data-date="${ds}" onclick="openDateModal(event,'${ds}')">${d}${dots}</a>`;
   }
 
   html += '</div>';
   cal.innerHTML = html;
 }
 
-document.getElementById('calPrev').addEventListener('click', () => {
-  viewMonth--;
-  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
-  buildCalendar();
-});
-
-document.getElementById('calNext').addEventListener('click', () => {
-  viewMonth++;
-  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
-  buildCalendar();
-});
-
+document.getElementById('calPrev').addEventListener('click', () => { viewMonth--; if (viewMonth < 0) { viewMonth=11; viewYear--; } buildCalendar(); });
+document.getElementById('calNext').addEventListener('click', () => { viewMonth++; if (viewMonth > 11) { viewMonth=0; viewYear++; } buildCalendar(); });
 buildCalendar();
+
+// Modal
+function openDateModal(e, ds) {
+  e.preventDefault();
+  const d = new Date(ds + 'T00:00:00');
+  const mn = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  document.getElementById('dateModalTitle').textContent = `${d.getDate()} ${mn[d.getMonth()]} ${d.getFullYear()}`;
+  document.getElementById('modalLogPeriod').href  = `/log/${ds}/`;
+  document.getElementById('modalLogHabits').href  = `/habits/log/${ds}/`;
+  document.getElementById('modalLogJournal').href = `/journal/${ds}/`;
+  document.getElementById('indPeriod').textContent  = loggedDates.has(ds) ? '✓' : '';
+  document.getElementById('indHabits').textContent  = habitDates.has(ds)  ? '✓' : '';
+  document.getElementById('indJournal').textContent = journalDates.has(ds)? '✓' : '';
+  document.getElementById('dateModal').classList.add('active');
+}
+
+document.getElementById('dateModalClose').addEventListener('click', closeModal);
+document.getElementById('dateModalBackdrop').addEventListener('click', closeModal);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+function closeModal() { document.getElementById('dateModal').classList.remove('active'); }
 </script>
 {% endblock %}

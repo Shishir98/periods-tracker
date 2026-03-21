@@ -14,11 +14,13 @@
 
   <nav class="nav">
     <a href="{% url 'dashboard' %}" class="nav-brand">luna</a>
-    <div class="nav-links">
-      <a href="{% url 'dashboard' %}" class="nav-link">home</a>
-      <a href="{% url 'log_entry' %}" class="nav-link">log</a>
-      <a href="{% url 'history' %}" class="nav-link">history</a>
-    </div>
+      <div class="nav-links">
+        <a href="{% url 'dashboard' %}"     class="nav-link">home</a>
+        <a href="{% url 'log_entry' %}"     class="nav-link">period</a>
+        <a href="{% url 'history' %}"       class="nav-link">history</a>
+        <a href="{% url 'manage_habits' %}" class="nav-link">habits</a>
+        <a href="{% url 'journal_list' %}"  class="nav-link">journal</a>
+      </div>
   </nav>
 
   <main class="main">

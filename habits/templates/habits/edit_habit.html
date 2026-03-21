@@ -1,0 +1,37 @@
+{% extends 'tracker/base.html' %}
+{% block title %}luna — edit habit{% endblock %}
+{% block content %}
+<div class="form-page">
+  <div class="form-header">
+    <h1 class="form-title">edit habit</h1>
+    <p class="form-subtitle">{{ habit.emoji }} {{ habit.name }}</p>
+  </div>
+  <form method="post" class="entry-form">
+    {% csrf_token %}
+    <div class="form-group">
+      <label class="form-label">name</label>
+      <input type="text" name="name" class="field-input" value="{{ habit.name }}" required>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">emoji</label>
+        <input type="text" name="emoji" class="field-input" value="{{ habit.emoji }}" maxlength="4">
+      </div>
+      <div class="form-group">
+        <label class="form-label">colour</label>
+        <input type="color" name="color" class="field-input" value="{{ habit.color }}" style="height:44px;padding:.2rem .4rem;">
+      </div>
+    </div>
+    <div class="form-group form-group--inline">
+      <label class="form-label form-label--check">
+        <input type="checkbox" name="is_active" class="field-check" {% if habit.is_active %}checked{% endif %}>
+        <span>active</span>
+      </label>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">save</button>
+      <a href="{% url 'manage_habits' %}" class="btn btn--ghost">cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

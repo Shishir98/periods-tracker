@@ -645,3 +645,240 @@ textarea.field-input { resize: vertical; min-height: 80px; }
   box-shadow: 0 0 4px rgba(232, 84, 122, 0.6);
   pointer-events: none;
 }
+/* ─── Date action modal ──────────────────────────────────── */
+.date-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.date-modal.active { display: flex; }
+.date-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(45,31,23,.35);
+  backdrop-filter: blur(2px);
+}
+.date-modal-box {
+  position: relative;
+  background: var(--cream);
+  border-radius: 20px;
+  padding: 1.8rem;
+  width: min(420px, 92vw);
+  box-shadow: var(--shadow-md);
+  animation: modalIn .18s ease;
+}
+@keyframes modalIn {
+  from { transform: translateY(10px) scale(.97); opacity:0; }
+  to   { transform: translateY(0) scale(1); opacity:1; }
+}
+.date-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+}
+.date-modal-title {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--bark);
+}
+.date-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1rem;
+  padding: .2rem .4rem;
+  border-radius: 50%;
+  transition: color .15s;
+}
+.date-modal-close:hover { color: var(--terra); }
+.date-modal-actions { display: flex; flex-direction: column; gap: .6rem; }
+.date-modal-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .9rem 1.1rem;
+  background: var(--parchment);
+  border-radius: var(--radius);
+  transition: all .15s;
+  cursor: pointer;
+}
+.date-modal-btn:hover { background: var(--sand); transform: translateX(3px); }
+.date-modal-icon {
+  font-size: 1.3rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cream);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.date-modal-text { flex: 1; display: flex; flex-direction: column; gap: .15rem; }
+.date-modal-label { font-size: .9rem; color: var(--bark); font-weight: 400; }
+.date-modal-sub { font-size: .72rem; color: var(--muted); letter-spacing: .03em; }
+.date-modal-indicator { font-size: .75rem; color: #4a8a42; font-weight: 600; }
+
+/* ─── Calendar extra dots ────────────────────────────────── */
+.cal-journal-dot {
+  position: absolute;
+  bottom: 3px;
+  left: calc(50% - 5px);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #7b5c9e;
+  pointer-events: none;
+}
+.cal-habit-dot {
+  position: absolute;
+  bottom: 3px;
+  left: calc(50% + 3px);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #5a8f52;
+  pointer-events: none;
+}
+.cal-sex-dot { left: calc(50% - 13px); }
+
+/* ─── Section title row ──────────────────────────────────── */
+.section-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+  padding-bottom: .5rem;
+  border-bottom: 1px solid var(--parchment);
+}
+
+/* ─── Habit stats grid ───────────────────────────────────── */
+.habit-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: .8rem;
+}
+.habit-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  background: var(--parchment);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  transition: box-shadow .2s;
+  cursor: pointer;
+}
+.habit-stat-card:hover { box-shadow: var(--shadow); }
+.hsc-top { display: flex; align-items: center; justify-content: space-between; }
+.hsc-name { font-size: .85rem; color: var(--bark); font-weight: 400; }
+.hsc-status {
+  font-size: .65rem;
+  letter-spacing: .05em;
+  padding: .15rem .5rem;
+  border-radius: 100px;
+  background: var(--cream);
+  color: var(--muted);
+}
+.hsc-status--done    { background: #e8f4e6; color: #3d6e36; }
+.hsc-status--partial { background: #fdf5e0; color: #7a5900; }
+.hsc-status--none    { background: var(--cream); color: var(--muted); }
+.hsc-bottom { display: flex; align-items: center; gap: .5rem; }
+.hsc-streak { font-size: .65rem; color: var(--muted); letter-spacing: .04em; white-space: nowrap; }
+.hsc-bar-wrap { flex: 1; height: 3px; background: var(--sand); border-radius: 100px; overflow: hidden; }
+.hsc-bar { height: 100%; border-radius: 100px; transition: width .4s; }
+.hsc-pct { font-size: .65rem; color: var(--muted); min-width: 28px; text-align: right; }
+
+/* ─── Habit manage page ──────────────────────────────────── */
+.habit-manage-list { list-style: none; display: flex; flex-direction: column; gap: .5rem; margin-bottom: 2rem; }
+.habit-manage-item { display: flex; align-items: center; gap: .9rem; padding: .8rem 1.1rem; background: var(--parchment); border-radius: var(--radius); }
+.habit-manage-item--inactive { opacity: .5; }
+.habit-name { flex: 1; font-size: .9rem; color: var(--bark); }
+.habit-badge { font-size: .65rem; letter-spacing: .06em; padding: .15rem .5rem; border-radius: 100px; background: var(--sand); color: var(--muted); text-transform: uppercase; }
+.habit-manage-actions { display: flex; gap: .4rem; }
+.habit-emoji { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .95rem; flex-shrink: 0; }
+.habit-add-card { background: var(--parchment); border-radius: var(--radius); padding: 1.5rem; }
+.color-pick-row { display: flex; align-items: center; gap: .6rem; }
+.color-native { width: 44px; height: 44px; border: 1.5px solid var(--sand); border-radius: var(--radius-sm); padding: .2rem; cursor: pointer; background: var(--parchment); }
+.color-swatches { display: flex; gap: .35rem; flex-wrap: wrap; }
+.color-swatch { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; transition: transform .15s; border: 2px solid transparent; }
+.color-swatch:hover { transform: scale(1.2); border-color: var(--ink); }
+
+/* ─── Habit log page ─────────────────────────────────────── */
+.habit-log-card {
+  background: var(--parchment);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.3rem;
+  border-left: 3px solid var(--habit-color, var(--terra));
+  display: flex;
+  flex-direction: column;
+  gap: .8rem;
+}
+.habit-log-header { display: flex; align-items: center; gap: .8rem; }
+.habit-log-name { font-size: .95rem; color: var(--bark); font-weight: 400; }
+.status-toggle { display: flex; gap: .4rem; }
+.status-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: .5rem .4rem;
+  border-radius: var(--radius-sm);
+  font-size: .75rem;
+  letter-spacing: .04em;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  background: var(--cream);
+  color: var(--muted);
+  transition: all .15s;
+  text-align: center;
+}
+.status-btn input { display: none; }
+.status-btn--not-done:has(input:checked) { background: #f0ece8; color: var(--bark); border-color: var(--sand); }
+.status-btn--partial:has(input:checked)  { background: #fdf5e0; color: #7a5900; border-color: #e8c97a; }
+.status-btn--done:has(input:checked)     { background: #e8f4e6; color: #3d6e36; border-color: #a8c5a0; }
+.status-btn:hover { border-color: var(--sand); }
+.habit-notes { margin-top: .2rem; min-height: 56px; }
+
+/* ─── Habit history grid ─────────────────────────────────── */
+.habit-grid-wrap { overflow-x: auto; padding-bottom: .5rem; }
+.habit-grid-days { display: flex; align-items: center; margin-bottom: .3rem; }
+.habit-grid-name-spacer { width: 140px; flex-shrink: 0; }
+.habit-grid-day-label { width: 22px; flex-shrink: 0; text-align: center; font-size: .6rem; color: var(--muted); letter-spacing: .03em; }
+.hgd--today { color: var(--terra); font-weight: 600; }
+.habit-grid-row { display: flex; align-items: center; gap: 0; margin-bottom: .4rem; }
+.habit-grid-name { width: 140px; flex-shrink: 0; display: flex; align-items: center; gap: .5rem; font-size: .8rem; color: var(--bark); padding-right: .8rem; }
+.habit-grid-cell { width: 18px; height: 18px; border-radius: 4px; margin: 0 2px; background: var(--parchment); flex-shrink: 0; transition: transform .1s; }
+.habit-grid-cell:hover { transform: scale(1.2); }
+.hgc--not_done { background: var(--parchment); }
+.hgc--empty    { background: var(--cream); border: 1px dashed var(--sand); }
+.habit-grid-legend { display: flex; gap: 1rem; margin-top: 1rem; }
+.hgl-item { display: flex; align-items: center; gap: .4rem; font-size: .7rem; color: var(--muted); }
+.hgl-dot { width: 12px; height: 12px; border-radius: 3px; }
+.hgl-dot--done    { background: var(--terra); }
+.hgl-dot--partial { background: var(--terra-lt); }
+.hgl-dot--empty   { background: var(--cream); border: 1px dashed var(--sand); }
+
+/* ─── Journal list ───────────────────────────────────────── */
+.journal-list { list-style: none; display: flex; flex-direction: column; gap: .6rem; }
+.journal-card { display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 1.2rem; background: var(--parchment); border-radius: var(--radius); transition: box-shadow .2s; }
+.journal-card:hover { box-shadow: var(--shadow); }
+.journal-card-body { flex: 1; }
+.journal-card-title { font-family: var(--font-display); font-size: 1.1rem; color: var(--bark); margin-bottom: .2rem; }
+.journal-card-excerpt { font-size: .82rem; color: var(--muted); font-style: italic; line-height: 1.5; }
+.journal-card-actions { display: flex; flex-direction: column; gap: .3rem; }
+
+/* ─── Journal editor ─────────────────────────────────────── */
+.journal-textarea {
+  min-height: 280px;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.8;
+  font-size: .95rem;
+}

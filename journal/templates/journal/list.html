@@ -1,0 +1,43 @@
+{% extends 'tracker/base.html' %}
+{% block title %}luna — journal{% endblock %}
+{% block content %}
+<div class="history-page">
+  <div class="form-header" style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h1 class="form-title">journal</h1>
+      <p class="form-subtitle">{{ entries.count }} entr{{ entries.count|pluralize:"y,ies" }}</p>
+    </div>
+    <a href="{% url 'journal_new' %}" class="btn btn--primary">new entry</a>
+  </div>
+
+  {% if entries %}
+  <ul class="journal-list">
+    {% for entry in entries %}
+    <li class="journal-card">
+      <div class="journal-card-date">
+        <span class="entry-day">{{ entry.date|date:"d" }}</span>
+        <span class="entry-month">{{ entry.date|date:"M Y" }}</span>
+      </div>
+      <div class="journal-card-body">
+        {% if entry.title %}<p class="journal-card-title">{{ entry.title }}</p>{% endif %}
+        <p class="journal-card-excerpt">{{ entry.excerpt }}</p>
+      </div>
+      <div class="journal-card-actions">
+        <a href="{% url 'journal_entry' entry.date|date:'Y-m-d' %}" class="entry-edit" title="edit">✎</a>
+        <form method="post" action="{% url 'journal_delete' entry.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="entry-edit" title="delete"
+            onclick="return confirm('Delete this entry?')" style="background:none;border:none;cursor:pointer;color:var(--sand);font-size:1rem;padding:.2rem;">✕</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state">
+    <p>nothing written yet.</p>
+    <a href="{% url 'journal_new' %}" class="btn btn--primary">write your first entry</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

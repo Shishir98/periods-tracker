@@ -1,0 +1,52 @@
+{% extends 'tracker/base.html' %}
+{% block title %}luna — journal entry{% endblock %}
+{% block content %}
+<div class="form-page" style="max-width:680px;">
+  <div class="form-header">
+    <h1 class="form-title">{% if instance %}edit entry{% else %}write{% endif %}</h1>
+    <p class="form-subtitle">{% if instance %}{{ instance.date|date:"F j, Y" }}{% else %}a space for your thoughts{% endif %}</p>
+  </div>
+
+  <form method="post" class="entry-form">
+    {% csrf_token %}
+    <div class="form-group">
+      <label class="form-label">date</label>
+      <input type="date" name="date" class="field-input"
+        value="{% if instance %}{{ instance.date|date:'Y-m-d' }}{% else %}{{ initial_date|date:'Y-m-d' }}{% endif %}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">title <span style="color:var(--sand);font-size:.7rem;text-transform:none;letter-spacing:0;">optional</span></label>
+      <input type="text" name="title" class="field-input"
+        placeholder="give this entry a name…"
+        value="{% if instance %}{{ instance.title }}{% endif %}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">entry</label>
+      <textarea name="content" class="field-input journal-textarea"
+        placeholder="write freely…" required>{% if instance %}{{ instance.content }}{% endif %}</textarea>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">save</button>
+      <a href="{% url 'journal_list' %}" class="btn btn--ghost">cancel</a>
+      {% if instance %}
+        <button type="button" class="btn btn--danger"
+          onclick="if(confirm('Delete this entry?')) document.getElementById('jdel-form').submit()">
+          delete
+        </button>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if instance %}
+  <form id="jdel-form" method="post" action="{% url 'journal_delete' instance.pk %}">{% csrf_token %}</form>
+  {% endif %}
+</div>
+<script>
+const ta = document.querySelector('.journal-textarea');
+if (ta) {
+  const resize = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+  ta.addEventListener('input', resize);
+  resize();
+}
+</script>
+{% endblock %}

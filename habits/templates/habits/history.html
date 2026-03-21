@@ -1,0 +1,57 @@
+{% extends 'tracker/base.html' %}
+{% load habit_extras %}
+{% block title %}luna — habit history{% endblock %}
+{% block content %}
+<div class="history-page">
+  <div class="form-header">
+    <h1 class="form-title">habit history</h1>
+    <p class="form-subtitle">last 30 days</p>
+  </div>
+
+  {% if habits %}
+  <div class="habit-grid-wrap">
+    <div class="habit-grid-days">
+      <div class="habit-grid-name-spacer"></div>
+      {% for day in days %}
+      <div class="habit-grid-day-label {% if day == today %}hgd--today{% endif %}">{{ day|date:"d" }}</div>
+      {% endfor %}
+    </div>
+
+    {% for habit in habits %}
+    {% with hlog=grid|get_item:habit.id %}
+    <div class="habit-grid-row">
+      <div class="habit-grid-name">
+        <span class="habit-emoji" style="background:{{ habit.color }}20;color:{{ habit.color }};">{{ habit.emoji }}</span>
+        {{ habit.name }}
+      </div>
+      {% for day in days %}
+      {% with status=hlog|get_item:day %}
+      <a href="{% url 'log_habits' day|date:'Y-m-d' %}"
+         class="habit-grid-cell {% if status == 'done' %}hgc--done{% elif status == 'partial' %}hgc--partial{% elif status == 'not_done' %}hgc--not_done{% else %}hgc--empty{% endif %}"
+         title="{{ day|date:'M j' }}: {{ status|default:'not logged' }}"
+         style="{% if status == 'done' %}background:{{ habit.color }};{% elif status == 'partial' %}background:{{ habit.color }}70;{% endif %}">
+      </a>
+      {% endwith %}
+      {% endfor %}
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+
+  <div class="habit-grid-legend">
+    <span class="hgl-item"><span class="hgl-dot hgl-dot--done"></span>done</span>
+    <span class="hgl-item"><span class="hgl-dot hgl-dot--partial"></span>partial</span>
+    <span class="hgl-item"><span class="hgl-dot hgl-dot--empty"></span>not logged</span>
+  </div>
+
+  <div style="margin-top:2rem;">
+    <a href="{% url 'manage_habits' %}" class="btn btn--ghost">manage habits</a>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <p>no habits to show.</p>
+    <a href="{% url 'manage_habits' %}" class="btn btn--primary">add habits</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

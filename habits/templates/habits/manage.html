@@ -1,0 +1,82 @@
+{% extends 'tracker/base.html' %}
+{% block title %}luna — habits{% endblock %}
+{% block content %}
+<div class="form-page" style="max-width:660px;">
+
+  <div class="form-header">
+    <h1 class="form-title">habits</h1>
+    <p class="form-subtitle">track what matters daily</p>
+  </div>
+
+  {% if habits %}
+  <ul class="habit-manage-list">
+    {% for habit in habits %}
+    <li class="habit-manage-item {% if not habit.is_active %}habit-manage-item--inactive{% endif %}">
+      <span class="habit-emoji" style="background:{{ habit.color }}20; color:{{ habit.color }};">{{ habit.emoji }}</span>
+      <span class="habit-name">{{ habit.name }}</span>
+      {% if not habit.is_active %}<span class="habit-badge">paused</span>{% endif %}
+      <div class="habit-manage-actions">
+        <a href="{% url 'edit_habit' habit.pk %}" class="btn btn--ghost" style="font-size:.75rem;padding:.4rem .9rem;">edit</a>
+        <form method="post" action="{% url 'delete_habit' habit.pk %}" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn--danger" style="font-size:.75rem;padding:.4rem .9rem;"
+            onclick="return confirm('Delete {{ habit.name }}?')">delete</button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state" style="padding:2rem 0;">
+    <p>no habits yet — add your first one below.</p>
+  </div>
+  {% endif %}
+
+  <div class="habit-add-card">
+    <h2 class="section-title" style="margin-bottom:1.2rem;">add a habit</h2>
+    <form method="post" class="entry-form">
+      {% csrf_token %}
+      <div class="form-row">
+        <div class="form-group" style="grid-column:1/-1;">
+          <label class="form-label">habit name</label>
+          <input type="text" name="name" class="field-input" placeholder="e.g. drink water, meditate…" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">emoji</label>
+          <input type="text" name="emoji" class="field-input" placeholder="✦" maxlength="4">
+        </div>
+        <div class="form-group">
+          <label class="form-label">colour</label>
+          <div class="color-pick-row">
+            <input type="color" name="color" class="color-native" value="#c26a4a">
+            <div class="color-swatches">
+              <span class="color-swatch" style="background:#c26a4a;" data-color="#c26a4a"></span>
+              <span class="color-swatch" style="background:#5a8f52;" data-color="#5a8f52"></span>
+              <span class="color-swatch" style="background:#a07800;" data-color="#a07800"></span>
+              <span class="color-swatch" style="background:#7b5c9e;" data-color="#7b5c9e"></span>
+              <span class="color-swatch" style="background:#3a7dbf;" data-color="#3a7dbf"></span>
+              <span class="color-swatch" style="background:#c05a7a;" data-color="#c05a7a"></span>
+              <span class="color-swatch" style="background:#2a9d8f;" data-color="#2a9d8f"></span>
+              <span class="color-swatch" style="background:#e07040;" data-color="#e07040"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn--primary">add habit</button>
+        <a href="{% url 'habit_history' %}" class="btn btn--ghost">view history</a>
+      </div>
+    </form>
+  </div>
+
+</div>
+<script>
+document.querySelectorAll('.color-swatch').forEach(s => {
+  s.addEventListener('click', () => {
+    document.querySelector('.color-native').value = s.dataset.color;
+  });
+});
+</script>
+{% endblock %}

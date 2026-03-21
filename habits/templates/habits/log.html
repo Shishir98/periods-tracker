@@ -1,0 +1,52 @@
+{% extends 'tracker/base.html' %}
+{% block title %}luna — log habits{% endblock %}
+{% block content %}
+<div class="form-page" style="max-width:620px;">
+  <div class="form-header">
+    <h1 class="form-title">log habits</h1>
+    <p class="form-subtitle">{{ entry_date|date:"F j, Y" }}</p>
+  </div>
+
+  {% if habit_data %}
+  <form method="post" class="entry-form">
+    {% csrf_token %}
+    {% for item in habit_data %}
+    <div class="habit-log-card" style="--habit-color:{{ item.habit.color }};">
+      <div class="habit-log-header">
+        <span class="habit-emoji" style="background:{{ item.habit.color }}20;color:{{ item.habit.color }};">{{ item.habit.emoji }}</span>
+        <span class="habit-log-name">{{ item.habit.name }}</span>
+      </div>
+      <div class="status-toggle">
+        <label class="status-btn status-btn--not-done">
+          <input type="radio" name="status_{{ item.habit.id }}" value="not_done"
+            {% if item.log and item.log.status == 'not_done' %}checked{% elif not item.log %}checked{% endif %}>
+          <span>not done</span>
+        </label>
+        <label class="status-btn status-btn--partial">
+          <input type="radio" name="status_{{ item.habit.id }}" value="partial"
+            {% if item.log and item.log.status == 'partial' %}checked{% endif %}>
+          <span>partial</span>
+        </label>
+        <label class="status-btn status-btn--done">
+          <input type="radio" name="status_{{ item.habit.id }}" value="done"
+            {% if item.log and item.log.status == 'done' %}checked{% endif %}>
+          <span>done</span>
+        </label>
+      </div>
+      <textarea name="notes_{{ item.habit.id }}" class="field-input habit-notes"
+        rows="2" placeholder="notes…">{% if item.log %}{{ item.log.notes }}{% endif %}</textarea>
+    </div>
+    {% endfor %}
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">save</button>
+      <a href="{% url 'dashboard' %}" class="btn btn--ghost">cancel</a>
+    </div>
+  </form>
+  {% else %}
+  <div class="empty-state">
+    <p>no active habits yet.</p>
+    <a href="{% url 'manage_habits' %}" class="btn btn--primary">add habits</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
