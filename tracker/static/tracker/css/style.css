@@ -861,8 +861,8 @@ textarea.field-input { resize: vertical; min-height: 80px; }
 .habit-grid-legend { display: flex; gap: 1rem; margin-top: 1rem; }
 .hgl-item { display: flex; align-items: center; gap: .4rem; font-size: .7rem; color: var(--muted); }
 .hgl-dot { width: 12px; height: 12px; border-radius: 3px; }
-.hgl-dot--done    { background: var(--terra); }
-.hgl-dot--partial { background: var(--terra-lt); }
+.hgl-dot--done    { background: #6b4c3b; }
+.hgl-dot--partial { background: #6b4c3b; opacity: .45; }
 .hgl-dot--empty   { background: var(--cream); border: 1px dashed var(--sand); }
 
 /* ─── Journal list ───────────────────────────────────────── */
@@ -881,4 +881,72 @@ textarea.field-input { resize: vertical; min-height: 80px; }
   overflow: hidden;
   line-height: 1.8;
   font-size: .95rem;
+}
+/* ─── Emoji picker ───────────────────────────────────────── */
+.emoji-field-wrap {
+  position: relative;
+  display: flex;
+  gap: .4rem;
+}
+
+.emoji-input {
+  width: 70px;
+  text-align: center;
+  font-size: 1.2rem;
+  padding: .5rem;
+}
+
+.emoji-picker-toggle {
+  background: var(--parchment);
+  border: 1.5px solid var(--sand);
+  border-radius: var(--radius-sm);
+  padding: .5rem .8rem;
+  font-size: .75rem;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color .15s;
+}
+.emoji-picker-toggle:hover { border-color: var(--terra); color: var(--terra); }
+
+.emoji-picker {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  background: var(--cream);
+  border: 1.5px solid var(--sand);
+  border-radius: var(--radius);
+  padding: .6rem;
+  box-shadow: var(--shadow-md);
+  width: 260px;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.emoji-picker.open { display: flex; }
+
+.emoji-opt {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: .25rem .3rem;
+  border-radius: 6px;
+  line-height: 1;
+  transition: background .1s;
+}
+.emoji-opt:hover { background: var(--parchment); }
+
+/* ─── Habit history inline section ──────────────────────── */
+.habit-history-section {
+  background: var(--parchment);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.color-swatch.selected {
+  border-color: var(--ink);
+  transform: scale(1.15);
 }

@@ -101,12 +101,12 @@
         </div>
         <p class="hsc-name">{{ hs.habit.name }}</p>
         <div class="hsc-bottom">
-          <span class="hsc-streak">{{ hs.streak }}d streak</span>
-          <div class="hsc-bar-wrap">
-            <div class="hsc-bar" style="width:{{ hs.week_pct }}%;background:{{ hs.habit.color }};"></div>
-          </div>
-          <span class="hsc-pct">{{ hs.week_pct }}%</span>
+        <span class="hsc-streak">{{ hs.streak }}d streak</span>
+        <div class="hsc-bar-wrap">
+          <div class="hsc-bar" style="width:{{ hs.month_pct }}%;background:{{ hs.habit.color }};"></div>
         </div>
+        <span class="hsc-pct">{{ hs.month_pct }}%</span>
+      </div>
       </a>
       {% endfor %}
     </div>

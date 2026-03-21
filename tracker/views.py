@@ -6,10 +6,11 @@ import json
 from .models import CycleEntry
 from .forms import CycleEntryForm
 
+
 def _get_late_info(stats, logged_dates, today):
     """Check if period is late and return overdue dates for calendar marking."""
     predicted = stats['next_predicted']
-    avg_cycle  = stats['avg_cycle']
+    avg_cycle = stats['avg_cycle']
     avg_period = stats['avg_period']
     last_start = stats['last_start']
 
@@ -46,6 +47,8 @@ def _get_late_info(stats, logged_dates, today):
         'cycle_normal': cycle_normal,
         'overdue_dates': overdue_dates,
     }
+
+
 def _get_cycle_stats(entries):
     period_days = sorted([e.date for e in entries if e.is_period_day])
     if not period_days:
@@ -93,8 +96,8 @@ def _get_phase_dates(stats, from_date, num_cycles=3):
     if not last_start:
         return {}
 
-    avg_cycle     = stats['avg_cycle']
-    avg_period    = stats['avg_period']
+    avg_cycle = stats['avg_cycle']
+    avg_period = stats['avg_period']
     ovulation_day = avg_cycle - 14
 
     phase_map = {}
@@ -117,18 +120,18 @@ def _get_phase_dates(stats, from_date, num_cycles=3):
 
 
 def dashboard(request):
-    today = date.today()
+    today   = date.today()
     entries = CycleEntry.objects.all()
-    stats = _get_cycle_stats(entries)
+    stats   = _get_cycle_stats(entries)
 
     logged_dates = set(str(e.date) for e in entries if e.is_period_day)
+    sex_dates    = set(str(e.date) for e in entries if e.protected_sex or e.unprotected_sex)
 
     phase_dates = _get_phase_dates(stats, from_date=today, num_cycles=13)
     for d in logged_dates:
         phase_dates.pop(d, None)
 
     late_info = _get_late_info(stats, logged_dates, today)
-    # Remove overdue dates from phase_dates so they get their own class
     for d in late_info['overdue_dates']:
         phase_dates.pop(d, None)
 
@@ -140,24 +143,40 @@ def dashboard(request):
     if stats['next_predicted']:
         days_until = (stats['next_predicted'] - today).days
 
-    sex_dates = set(str(e.date) for e in entries if e.protected_sex or e.unprotected_sex)  # add this
-    recent = entries[:5]
+    recent      = entries[:5]
+    habit_stats = _get_habit_stats(today)
+
+    try:
+        from journal.models import JournalEntry
+        journal_dates = set(str(e.date) for e in JournalEntry.objects.all())
+    except ImportError:
+        journal_dates = set()
+
+    try:
+        from habits.models import HabitLog
+        habit_logged_dates = set(
+            str(d) for d in HabitLog.objects.values_list('date', flat=True).distinct()
+        )
+    except ImportError:
+        habit_logged_dates = set()
 
     context = {
-        'today': today,
-        'stats': stats,
-        'logged_dates_json': json.dumps(list(logged_dates)),
-        'sex_dates_json': json.dumps(list(sex_dates)),
-        'phase_dates_json': json.dumps(phase_dates),
-        'overdue_dates_json': json.dumps(late_info['overdue_dates']),
-        'late_info': late_info,
-        'days_since': days_since,
-        'days_until': days_until,
-        'recent': recent,
-        'total_entries': entries.count(),
+        'today':               today,
+        'stats':               stats,
+        'logged_dates_json':   json.dumps(list(logged_dates)),
+        'sex_dates_json':      json.dumps(list(sex_dates)),
+        'phase_dates_json':    json.dumps(phase_dates),
+        'overdue_dates_json':  json.dumps(late_info['overdue_dates']),
+        'journal_dates_json':  json.dumps(list(journal_dates)),
+        'habit_dates_json':    json.dumps(list(habit_logged_dates)),
+        'late_info':           late_info,
+        'days_since':          days_since,
+        'days_until':          days_until,
+        'recent':              recent,
+        'total_entries':       entries.count(),
+        'habit_stats':         habit_stats,
     }
     return render(request, 'tracker/dashboard.html', context)
-
 
 def log_entry(request, entry_date=None):
     initial = {}
@@ -200,3 +219,53 @@ def history(request):
     entries = CycleEntry.objects.all()
     stats = _get_cycle_stats(entries)
     return render(request, 'tracker/history.html', {'entries': entries, 'stats': stats})
+
+
+def _get_habit_stats(today):
+    try:
+        from habits.models import Habit, HabitLog
+    except ImportError:
+        return []
+
+    habits = Habit.objects.filter(is_active=True)
+    if not habits.exists():
+        return []
+
+    import calendar
+    result      = []
+    month_start = today.replace(day=1)
+    days_so_far = today.day  # how many days have passed this month
+
+    for habit in habits:
+        # Streak
+        streak = 0
+        d = today
+        while streak < 365:
+            log = HabitLog.objects.filter(habit=habit, date=d).first()
+            if log and log.status in ('done', 'partial'):
+                streak += 1
+                d -= timedelta(days=1)
+            else:
+                break
+
+        # Monthly completion % (out of days elapsed this month)
+        month_logs = HabitLog.objects.filter(
+            habit=habit,
+            date__gte=month_start,
+            date__lte=today
+        )
+        done_count = month_logs.filter(status__in=('done', 'partial')).count()
+        month_pct  = round((done_count / days_so_far) * 100) if days_so_far else 0
+
+        today_log = HabitLog.objects.filter(habit=habit, date=today).first()
+
+        result.append({
+            'habit':        habit,
+            'streak':       streak,
+            'month_pct':    month_pct,
+            'done_count':   done_count,
+            'days_so_far':  days_so_far,
+            'today_status': today_log.status if today_log else None,
+        })
+
+    return result
