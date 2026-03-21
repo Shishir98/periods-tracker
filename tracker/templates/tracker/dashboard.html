@@ -1,0 +1,224 @@
+{% extends 'tracker/base.html' %}
+{% load static %}
+
+{% block title %}luna — home{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="cycle-orb" id="cycleOrb">
+        <div class="orb-ring"></div>
+        <div class="orb-core">
+          {% if days_since is not None %}
+            {% if days_since == 0 %}
+              <span class="orb-label">today</span>
+              <span class="orb-number">day 1</span>
+            {% elif days_since <= 7 %}
+              <span class="orb-label">day</span>
+              <span class="orb-number">{{ days_since }}</span>
+            {% else %}
+              <span class="orb-label">days since</span>
+              <span class="orb-number">{{ days_since }}</span>
+            {% endif %}
+          {% else %}
+            <span class="orb-label">no data</span>
+            <span class="orb-number">yet</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="hero-info">
+        <h1 class="hero-title">
+          {% if days_since is not None and days_since <= 7 %}
+            your cycle is here
+          {% elif days_until is not None and days_until <= 5 %}
+            cycle arriving soon
+          {% elif days_until is not None %}
+            in the clear
+          {% else %}
+            start tracking
+          {% endif %}
+        </h1>
+
+        <div class="stat-row">
+          {% if stats.next_predicted %}
+            <div class="stat">
+              <span class="stat-value">
+                {% if days_until is not None %}
+                  {% if days_until < 0 %}overdue{% elif days_until == 0 %}today{% else %}{{ days_until }}d{% endif %}
+                {% else %}—{% endif %}
+              </span>
+              <span class="stat-label">until next</span>
+            </div>
+          {% endif %}
+          <div class="stat">
+            <span class="stat-value">{{ stats.avg_cycle }}d</span>
+            <span class="stat-label">avg cycle</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">{{ stats.avg_period }}d</span>
+            <span class="stat-label">avg period</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">{{ total_entries }}</span>
+            <span class="stat-label">days logged</span>
+          </div>
+        </div>
+
+        <a href="{% url 'log_entry' %}" class="btn btn--primary">log today</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cycle status bar -->
+  <div class="cycle-status">
+    <div class="cycle-status-left">
+      {% if late_info.cycle_day %}
+        <span class="status-item">
+          <span class="status-label">cycle day</span>
+          <span class="status-val">{{ late_info.cycle_day }}</span>
+        </span>
+        <span class="status-divider">·</span>
+      {% endif %}
+      <span class="status-item">
+        <span class="status-label">avg length</span>
+        <span class="status-val {% if late_info.cycle_normal %}status-val--normal{% else %}status-val--irregular{% endif %}">
+          {{ stats.avg_cycle }}d
+          {% if late_info.cycle_normal %}· normal{% else %}· irregular{% endif %}
+        </span>
+      </span>
+    </div>
+
+    {% if late_info.is_late %}
+    <div class="cycle-status-warning">
+      <span class="warning-icon">⚠</span>
+      period is {{ late_info.days_late }} day{{ late_info.days_late|pluralize }} late
+      <span class="warning-sub">— log if it has started</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <section class="section">
+    <div class="cal-nav">
+      <button class="cal-nav-btn" id="calPrev">&#8592;</button>
+      <h2 class="section-title" id="calMonthLabel" style="margin-bottom:0;border:none;padding:0;"></h2>
+      <button class="cal-nav-btn" id="calNext">&#8594;</button>
+    </div>
+    <div class="calendar" id="calendar"></div>
+    <div class="phase-legend">
+      <span class="phase-legend-item"><span class="phase-dot phase-dot--menstrual"></span>period</span>
+      <span class="phase-legend-item"><span class="phase-dot phase-dot--predicted"></span>predicted</span>
+      <span class="phase-legend-item"><span class="phase-dot phase-dot--follicular"></span>follicular</span>
+      <span class="phase-legend-item"><span class="phase-dot phase-dot--ovulation"></span>ovulation</span>
+      <span class="phase-legend-item"><span class="phase-dot phase-dot--luteal"></span>luteal</span>
+    </div>
+  </section>
+
+  {% if recent %}
+  <section class="section">
+    <h2 class="section-title">recent</h2>
+    <ul class="entry-list">
+      {% for entry in recent %}
+      <li class="entry-item">
+        <div class="entry-date">
+          <span class="entry-day">{{ entry.date|date:"d" }}</span>
+          <span class="entry-month">{{ entry.date|date:"M" }}</span>
+        </div>
+        <div class="entry-details">
+          {% if entry.flow %}<span class="tag">{{ entry.flow }}</span>{% endif %}
+          {% if entry.mood %}<span class="tag">{{ entry.mood }}</span>{% endif %}
+          {% if entry.cramps %}<span class="tag tag--symptom">cramps</span>{% endif %}
+          {% if entry.headache %}<span class="tag tag--symptom">headache</span>{% endif %}
+          {% if entry.bloating %}<span class="tag tag--symptom">bloating</span>{% endif %}
+          {% if entry.fatigue %}<span class="tag tag--symptom">fatigue</span>{% endif %}
+          {% if entry.notes %}<p class="entry-note">{{ entry.notes|truncatechars:80 }}</p>{% endif %}
+        </div>
+        <a href="{% url 'log_entry_date' entry.date|date:'Y-m-d' %}" class="entry-edit" title="edit">✎</a>
+      </li>
+      {% endfor %}
+    </ul>
+    <a href="{% url 'history' %}" class="link-more">view all entries →</a>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const loggedDates  = new Set({{ logged_dates_json|safe }});
+const sexDates     = new Set({{ sex_dates_json|safe }});
+const overdueDates = new Set({{ overdue_dates_json|safe }});
+const phaseDates   = {{ phase_dates_json|safe }};
+const today        = new Date();
+
+let viewYear  = today.getFullYear();
+let viewMonth = today.getMonth();
+
+const MONTH_NAMES = [
+  'january','february','march','april','may','june',
+  'july','august','september','october','november','december'
+];
+
+function buildCalendar() {
+  const cal   = document.getElementById('calendar');
+  const label = document.getElementById('calMonthLabel');
+  if (!cal) return;
+
+  label.textContent = `${MONTH_NAMES[viewMonth]} ${viewYear}`;
+
+  const firstDay    = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+  const dayNames = ['su','mo','tu','we','th','fr','sa'];
+  let html = '<div class="cal-grid">';
+  dayNames.forEach(d => { html += `<div class="cal-head">${d}</div>`; });
+
+  for (let i = 0; i < firstDay; i++) {
+    html += '<div class="cal-cell cal-cell--empty"></div>';
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr  = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday  = d === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
+    const isOverdue = overdueDates.has(dateStr);
+    const isLogged  = loggedDates.has(dateStr);
+    const phase     = phaseDates[dateStr];
+    const hasSex    = sexDates.has(dateStr);
+
+    let cls = 'cal-cell';
+    if (isOverdue) {
+      cls += ' cal-cell--overdue';
+    } else if (isLogged) {
+      cls += ' cal-cell--period';
+    } else if (phase === 'menstrual') {
+      cls += ' cal-cell--predicted';
+    } else if (phase) {
+      cls += ` cal-cell--${phase}`;
+    }
+    if (isToday) cls += ' cal-cell--today';
+
+    html += `<a href="/log/${dateStr}/" class="${cls}">${d}${hasSex ? '<span class="cal-sex-dot"></span>' : ''}</a>`;
+  }
+
+  html += '</div>';
+  cal.innerHTML = html;
+}
+
+document.getElementById('calPrev').addEventListener('click', () => {
+  viewMonth--;
+  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  buildCalendar();
+});
+
+document.getElementById('calNext').addEventListener('click', () => {
+  viewMonth++;
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  buildCalendar();
+});
+
+buildCalendar();
+</script>
+{% endblock %}

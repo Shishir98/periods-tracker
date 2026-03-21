@@ -1,0 +1,63 @@
+{% extends 'tracker/base.html' %}
+
+{% block title %}luna — history{% endblock %}
+
+{% block content %}
+<div class="history-page">
+  <div class="form-header">
+    <h1 class="form-title">your history</h1>
+    <p class="form-subtitle">{{ entries.count }} day{{ entries.count|pluralize }} logged</p>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <span class="stat-card-value">{{ stats.avg_cycle }}d</span>
+      <span class="stat-card-label">average cycle</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-card-value">{{ stats.avg_period }}d</span>
+      <span class="stat-card-label">average period</span>
+    </div>
+    {% if stats.last_start %}
+    <div class="stat-card">
+      <span class="stat-card-value">{{ stats.last_start|date:"M j" }}</span>
+      <span class="stat-card-label">last start</span>
+    </div>
+    {% endif %}
+    {% if stats.next_predicted %}
+    <div class="stat-card">
+      <span class="stat-card-value">{{ stats.next_predicted|date:"M j" }}</span>
+      <span class="stat-card-label">next predicted</span>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if entries %}
+  <ul class="entry-list entry-list--full">
+    {% for entry in entries %}
+    <li class="entry-item">
+      <div class="entry-date">
+        <span class="entry-day">{{ entry.date|date:"d" }}</span>
+        <span class="entry-month">{{ entry.date|date:"M Y" }}</span>
+      </div>
+      <div class="entry-details">
+        {% if entry.flow %}<span class="tag">{{ entry.flow }}</span>{% endif %}
+        {% if entry.mood %}<span class="tag">{{ entry.mood }}</span>{% endif %}
+        {% if entry.cramps %}<span class="tag tag--symptom">cramps</span>{% endif %}
+        {% if entry.headache %}<span class="tag tag--symptom">headache</span>{% endif %}
+        {% if entry.bloating %}<span class="tag tag--symptom">bloating</span>{% endif %}
+        {% if entry.fatigue %}<span class="tag tag--symptom">fatigue</span>{% endif %}
+        {% if entry.notes %}<p class="entry-note">{{ entry.notes }}</p>{% endif %}
+      </div>
+      <a href="{% url 'log_entry_date' entry.date|date:'Y-m-d' %}" class="entry-edit" title="edit">✎</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state">
+    <p>nothing logged yet.</p>
+    <a href="{% url 'log_entry' %}" class="btn btn--primary">log your first day</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

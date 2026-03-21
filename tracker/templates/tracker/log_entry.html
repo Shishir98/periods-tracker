@@ -1,0 +1,130 @@
+{% extends 'tracker/base.html' %}
+
+{% block title %}luna — log{% endblock %}
+
+{% block content %}
+<div class="form-page">
+  <div class="form-header">
+    <h1 class="form-title">
+      {% if instance %}edit entry{% else %}log a day{% endif %}
+    </h1>
+    <p class="form-subtitle">
+      {% if instance %}{{ instance.date|date:"F j, Y" }}{% else %}how are you feeling?{% endif %}
+    </p>
+  </div>
+
+  <form method="post" class="entry-form">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label class="form-label" for="{{ form.date.id_for_label }}">date</label>
+      {{ form.date }}
+      {% if form.date.errors %}<p class="field-error">{{ form.date.errors.0 }}</p>{% endif %}
+    </div>
+
+    <div class="form-group form-group--inline">
+      <label class="form-label form-label--check">
+        {{ form.is_period_day }}
+        <span>period day</span>
+      </label>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="{{ form.flow.id_for_label }}">flow</label>
+        {{ form.flow }}
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="{{ form.mood.id_for_label }}">mood</label>
+        {{ form.mood }}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">symptoms</label>
+      <div class="symptom-grid">
+        <label class="symptom-check">
+          {{ form.cramps }}
+          <span class="symptom-label">cramps</span>
+        </label>
+        <label class="symptom-check">
+          {{ form.headache }}
+          <span class="symptom-label">headache</span>
+        </label>
+        <label class="symptom-check">
+          {{ form.bloating }}
+          <span class="symptom-label">bloating</span>
+        </label>
+        <label class="symptom-check">
+          {{ form.fatigue }}
+          <span class="symptom-label">fatigue</span>
+        </label>
+      </div>
+      <div class="form-group">
+  <label class="form-label">symptoms</label>
+  <div class="symptom-grid">
+    <label class="symptom-check">
+      {{ form.cramps }}
+      <span class="symptom-label">cramps</span>
+    </label>
+    <label class="symptom-check">
+      {{ form.headache }}
+      <span class="symptom-label">headache</span>
+    </label>
+    <label class="symptom-check">
+      {{ form.bloating }}
+      <span class="symptom-label">bloating</span>
+    </label>
+    <label class="symptom-check">
+      {{ form.fatigue }}
+      <span class="symptom-label">fatigue</span>
+    </label>
+  </div>
+</div>
+
+<div class="form-group">
+  <label class="form-label">sexual activity</label>
+  <div class="symptom-grid">
+    <label class="symptom-check">
+      {{ form.protected_sex }}
+      <span class="symptom-label">protected sex</span>
+    </label>
+    <label class="symptom-check">
+      {{ form.unprotected_sex }}
+      <span class="symptom-label">unprotected sex</span>
+    </label>
+    <label class="symptom-check">
+      {{ form.oral_contraception }}
+      <span class="symptom-label">oral contraception</span>
+    </label>
+  </div>
+</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="{{ form.notes.id_for_label }}">notes</label>
+      {{ form.notes }}
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn--primary">save</button>
+      <a href="{% url 'dashboard' %}" class="btn btn--ghost">cancel</a>
+      {% if instance %}
+        <button
+          type="button"
+          class="btn btn--danger"
+          onclick="if(confirm('Remove this entry?')) document.getElementById('delete-form').submit()">
+          delete
+        </button>
+      {% endif %}
+    </div>
+  </form>
+
+  {% if instance %}
+    <form id="delete-form" method="post" action="{% url 'delete_entry' instance.pk %}">
+      {% csrf_token %}
+    </form>
+  {% endif %}
+
+</div>
+{% endblock %}

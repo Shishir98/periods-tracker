@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}luna{% endblock %}</title>
+  {% load static %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'tracker/css/style.css' %}">
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="{% url 'dashboard' %}" class="nav-brand">luna</a>
+    <div class="nav-links">
+      <a href="{% url 'dashboard' %}" class="nav-link">home</a>
+      <a href="{% url 'log_entry' %}" class="nav-link">log</a>
+      <a href="{% url 'history' %}" class="nav-link">history</a>
+    </div>
+  </nav>
+
+  <main class="main">
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <p class="message message--{{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p>your data stays here, always.</p>
+  </footer>
+
+  <script src="{% static 'tracker/js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
