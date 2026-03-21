@@ -31,7 +31,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'period_tracker.urls'
-STATIC_ROOT = "/home/trackerdaily/periods-tracker/period_tracker/static"
+STATIC_ROOT = "/home/trackerdaily/periods-tracker/tracker/static"
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
